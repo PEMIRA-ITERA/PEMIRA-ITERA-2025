@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
       totalVotes,
       totalCandidates,
       pendingValidations,
-      candidateWithCounts
+      candidateWithCounts,
+      votesWithDetails
     ] = await Promise.all([
       prisma.user.count({ where: { role: 'VOTER' } }),
       prisma.vote.count(),
@@ -32,6 +33,12 @@ export async function GET(request: NextRequest) {
         where: { isActive: true },
         include: { _count: { select: { votes: true } } },
         orderBy: { createdAt: 'asc' }
+      }),
+      prisma.vote.findMany({
+        include: {
+          user: { select: { prodi: true } },
+          candidate: { select: { name: true } }
+        }
       })
     ])
 
@@ -44,6 +51,33 @@ export async function GET(request: NextRequest) {
       percentage: totalVotes > 0 ? parseFloat(((c._count.votes / totalVotes) * 100).toFixed(2)) : 0
     }))
 
+    // Calculate prodi statistics
+    const prodiStats: Record<string, { totalVotes: number; candidates: Record<string, number> }> = {}
+    
+    votesWithDetails.forEach((vote) => {
+      const prodi = vote.user.prodi
+      const candidateName = vote.candidate.name
+      
+      if (!prodiStats[prodi]) {
+        prodiStats[prodi] = { totalVotes: 0, candidates: {} }
+      }
+      
+      prodiStats[prodi].totalVotes++
+      prodiStats[prodi].candidates[candidateName] = (prodiStats[prodi].candidates[candidateName] || 0) + 1
+    })
+
+    // Format prodi stats for frontend
+    const prodiVoteStats = Object.entries(prodiStats)
+      .map(([prodi, data]) => ({
+        prodi,
+        totalVotes: data.totalVotes,
+        candidates: Object.entries(data.candidates).map(([name, count]) => ({
+          name,
+          count
+        }))
+      }))
+      .sort((a, b) => b.totalVotes - a.totalVotes)
+
     const stats = {
       totalUsers,
       totalVotes,
@@ -52,7 +86,7 @@ export async function GET(request: NextRequest) {
       votingPercentage
     }
 
-    return NextResponse.json({ stats, voteStats })
+    return NextResponse.json({ stats, voteStats, prodiVoteStats })
   } catch (error) {
     console.error('Monitoring stats error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

@@ -11,7 +11,6 @@ import Image from "next/image"
 interface User {
   id: string
   name: string
-  email: string
   nim: string
   hasVoted: boolean
 }
@@ -180,7 +179,7 @@ export default function SuccessPage() {
                   <div>
                     <p className="text-sm text-muted-foreground">Pemilih</p>
                     <p className="font-semibold">{user?.name}</p>
-                    <p className="text-sm text-muted-foreground">{user?.email}</p>
+                    <p className="text-sm text-muted-foreground">NIM: {user?.nim}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Waktu Vote</p>

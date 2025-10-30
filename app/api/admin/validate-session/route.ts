@@ -33,7 +33,6 @@ export async function POST(request: NextRequest) {
           select: {
             name: true,
             nim: true,
-            email: true,
             hasVoted: true
           }
         }
@@ -95,7 +94,6 @@ export async function POST(request: NextRequest) {
           select: {
             name: true,
             nim: true,
-            email: true,
             hasVoted: true
           }
         }

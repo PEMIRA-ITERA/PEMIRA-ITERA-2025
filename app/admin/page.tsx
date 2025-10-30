@@ -39,7 +39,6 @@ interface VotingSession {
 
 interface AdminStats {
   totalUsers: number
-  totalPending: number
   totalValidated: number
   totalVoted: number
   todayValidations: number
@@ -58,7 +57,6 @@ export default function AdminPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
-    totalPending: 0,
     totalValidated: 0,
     totalVoted: 0,
     todayValidations: 0
@@ -292,8 +290,7 @@ export default function AdminPage() {
   const filteredPendingSessions = pendingSessions.filter(
     (session) =>
       session.user?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      session.user?.nim.includes(searchTerm) ||
-      session.redeemCode.includes(searchTerm.toUpperCase()),
+      session.user?.nim.includes(searchTerm),
   )
 
   // Inline alerts removed in favor of toast popups
@@ -597,7 +594,7 @@ export default function AdminPage() {
                       Menunggu Validasi ({filteredPendingSessions.length})
                     </CardTitle>
                     <CardDescription>
-                      Daftar mahasiswa yang sudah generate QR code dan menunggu validasi
+                      10 session terbaru yang menunggu validasi
                     </CardDescription>
                   </div>
                   <Button variant="outline" onClick={loadData} disabled={loading} className="shadow-sm">
@@ -612,7 +609,7 @@ export default function AdminPage() {
                   <div className="flex items-center space-x-2">
                     <Search className="h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Cari berdasarkan nama, NIM, atau kode redeem..."
+                      placeholder="Cari berdasarkan nama atau NIM..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="max-w-md"
@@ -634,16 +631,14 @@ export default function AdminPage() {
                       <TableHeader>
                         <TableRow className="bg-muted/50">
                           <TableHead className="font-semibold">Mahasiswa</TableHead>
-                          <TableHead className="font-semibold">Kode Redeem</TableHead>
                           <TableHead className="font-semibold">Dibuat</TableHead>
                           <TableHead className="font-semibold">Kadaluarsa</TableHead>
-                          <TableHead className="font-semibold text-center">Aksi</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {filteredPendingSessions.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={5} className="text-center py-12">
+                            <TableCell colSpan={3} className="text-center py-12">
                               <div className="space-y-2">
                                 <Clock className="h-12 w-12 mx-auto text-muted-foreground/50" />
                                 <p className="text-lg font-medium text-muted-foreground">
@@ -673,11 +668,6 @@ export default function AdminPage() {
                                 </div>
                               </TableCell>
                               <TableCell>
-                                <Badge variant="outline" className="font-mono text-sm px-3 py-1">
-                                  {session.redeemCode}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
                                 <div className="text-sm">
                                   {formatDateTime(session.createdAt)}
                                 </div>
@@ -694,21 +684,6 @@ export default function AdminPage() {
                                     </Badge>
                                   )}
                                 </div>
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleRedeemCodeValidation(session.redeemCode)}
-                                  disabled={validating || isExpired(session.expiresAt)}
-                                  className="shadow-sm"
-                                >
-                                  {validating ? (
-                                    <div className="mr-2 h-3 w-3 animate-spin border border-white border-t-transparent rounded-full" />
-                                  ) : (
-                                    <CheckCircle className="mr-2 h-4 w-4" />
-                                  )}
-                                  {isExpired(session.expiresAt) ? 'Expired' : 'Validasi'}
-                                </Button>
                               </TableCell>
                             </TableRow>
                           ))
@@ -732,7 +707,7 @@ export default function AdminPage() {
                       Riwayat Validasi ({recentValidations.length})
                     </CardTitle>
                     <CardDescription>
-                      50 validasi terakhir yang telah dilakukan oleh admin
+                      10 validasi terbaru yang telah dilakukan oleh admin
                     </CardDescription>
                   </div>
                   <Button variant="outline" onClick={loadData} disabled={loading} className="shadow-sm">
@@ -749,7 +724,6 @@ export default function AdminPage() {
                         <TableHead className="font-semibold">Mahasiswa</TableHead>
                         <TableHead className="font-semibold">Kode Redeem</TableHead>
                         <TableHead className="font-semibold">Dibuat</TableHead>
-                        <TableHead className="font-semibold">Divalidasi</TableHead>
                         <TableHead className="font-semibold">Validator</TableHead>
                         <TableHead className="font-semibold text-center">Status</TableHead>
                       </TableRow>
@@ -757,7 +731,7 @@ export default function AdminPage() {
                     <TableBody>
                       {recentValidations.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={6} className="text-center py-12">
+                          <TableCell colSpan={5} className="text-center py-12">
                             <div className="space-y-2">
                               <CheckCircle className="h-12 w-12 mx-auto text-muted-foreground/50" />
                               <p className="text-lg font-medium text-muted-foreground">
@@ -791,11 +765,6 @@ export default function AdminPage() {
                             <TableCell>
                               <div className="text-sm">
                                 {formatDateTime(session.createdAt)}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-sm">
-                                {session.updatedAt ? formatDateTime(session.updatedAt) : 'N/A'}
                               </div>
                             </TableCell>
                             <TableCell>

@@ -11,10 +11,10 @@ export async function GET(request: NextRequest) {
   try {
     const logs = await prisma.adminLog.findMany({
       include: {
-        admin: { select: { id: true, name: true, email: true, role: true } },
+        admin: { select: { id: true, name: true, role: true } },
       },
       orderBy: { createdAt: 'desc' },
-      take: 100,
+      take: 10,
     })
 
     return NextResponse.json({ logs })

@@ -36,8 +36,7 @@ export async function POST(request: NextRequest) {
                 user: {
                     select: {
                         name: true,
-                        nim: true,
-                        email: true
+                        nim: true
                     }
                 }
             }

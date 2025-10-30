@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
             return adminUser
         }
 
-        console.log('Admin accessing recent validations:', adminUser.email)
+        console.log('Admin accessing recent validations:', adminUser.nim)
 
         const sessions = await prisma.votingSession.findMany({
             where: {
@@ -25,8 +25,7 @@ export async function GET(request: NextRequest) {
                     select: {
                         name: true,
                         nim: true,
-                        prodi: true,
-                        email: true
+                        prodi: true
                     }
                 },
                 validator: {
@@ -39,7 +38,7 @@ export async function GET(request: NextRequest) {
             orderBy: {
                 createdAt: 'desc'
             },
-            take: 50 // Last 50 validations
+            take: 10 // Last 10 validations
         })
 
         return NextResponse.json({

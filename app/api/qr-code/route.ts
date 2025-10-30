@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     console.log('POST /api/qr-code called')
 
     const user = await getUserFromRequest(request)
-    console.log('User from request:', user ? { id: user.id, email: user.email } : null)
+    console.log('User from request:', user ? { id: user.id, nim: user.nim } : null)
 
     if (!user) {
       console.log('User not authenticated')
@@ -184,7 +184,7 @@ export async function GET(request: NextRequest) {
     console.log('GET /api/qr-code called')
 
     const user = await getUserFromRequest(request)
-    console.log('User from request:', user ? { id: user.id, email: user.email } : null)
+    console.log('User from request:', user ? { id: user.id, nim: user.nim } : null)
 
     if (!user) {
       return NextResponse.json(

@@ -3,12 +3,9 @@ export type Role = "VOTER" | "ADMIN" | "SUPER_ADMIN"
 
 export interface User {
   id: string
-  email: string
   nim: string
   name: string
   prodi: string
-  gender: string
-  phone?: string
   role: Role
   hasVoted: boolean
   createdAt: string

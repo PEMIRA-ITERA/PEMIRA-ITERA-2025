@@ -7,32 +7,71 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, RefreshCw, UserCheck, UserX } from "lucide-react"
+import { Search, RefreshCw, UserCheck, UserX, ChevronLeft, ChevronRight } from "lucide-react"
 import { ApiClient } from "@/lib/api-client"
 import type { User } from "@/lib/types"
 
 export default function UserManagement() {
   const [users, setUsers] = useState<User[]>([])
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [prodiFilter, setProdiFilter] = useState("all")
+  const [prodiList, setProdiList] = useState<string[]>([])
+  const [page, setPage] = useState(1)
+  const [limit] = useState(10)
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0
+  })
+  const [totalStats, setTotalStats] = useState({
+    totalUsers: 0,
+    totalVoters: 0,
+    totalVoted: 0,
+    totalAdmins: 0
+  })
 
   useEffect(() => {
     loadUsers()
-  }, [])
+  }, [page, roleFilter, statusFilter, prodiFilter])
 
+  // Debounce search
   useEffect(() => {
-    filterUsers()
-  }, [users, searchTerm, roleFilter, statusFilter])
+    const timer = setTimeout(() => {
+      if (page === 1) {
+        loadUsers()
+      } else {
+        setPage(1)
+      }
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [searchTerm])
 
   const loadUsers = async () => {
     try {
-      const response = await fetch('/api/admin/users')
+      setLoading(true)
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+        ...(searchTerm && { search: searchTerm }),
+        ...(roleFilter !== 'all' && { role: roleFilter }),
+        ...(statusFilter !== 'all' && { status: statusFilter }),
+        ...(prodiFilter !== 'all' && { prodi: prodiFilter })
+      })
+
+      const response = await fetch(`/api/admin/users?${params}`)
       if (response.ok) {
         const data = await response.json()
         setUsers(data.users || [])
+        setPagination(data.pagination)
+        setProdiList(data.prodiList || [])
+        
+        // Load total stats (without filters for accurate counts)
+        loadTotalStats()
       } else {
         console.error("Error loading users")
       }
@@ -43,36 +82,28 @@ export default function UserManagement() {
     }
   }
 
-  const filterUsers = () => {
-    let filtered = users
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (user) =>
-          user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.nim.includes(searchTerm) ||
-          user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.prodi.toLowerCase().includes(searchTerm.toLowerCase()),
-      )
-    }
-
-    // Role filter
-    if (roleFilter !== "all") {
-      filtered = filtered.filter((user) => user.role === roleFilter)
-    }
-
-    // Status filter
-    if (statusFilter !== "all") {
-      if (statusFilter === "voted") {
-        filtered = filtered.filter((user) => user.hasVoted)
-      } else if (statusFilter === "not-voted") {
-        filtered = filtered.filter((user) => !user.hasVoted)
+  const loadTotalStats = async () => {
+    try {
+      const response = await fetch('/api/admin/users?limit=0')
+      if (response.ok) {
+        const data = await response.json()
+        // Calculate stats from pagination total
+        const statsResponse = await fetch('/api/admin/stats')
+        if (statsResponse.ok) {
+          const statsData = await statsResponse.json()
+          setTotalStats({
+            totalUsers: statsData.stats.totalUsers || 0,
+            totalVoters: statsData.stats.totalUsers || 0,
+            totalVoted: statsData.stats.totalVotes || 0,
+            totalAdmins: 0
+          })
+        }
       }
+    } catch (err) {
+      console.error("Error loading stats:", err)
     }
-
-    setFilteredUsers(filtered)
   }
+
 
   const updateUserRole = async (userId: string, newRole: string) => {
     try {
@@ -125,66 +156,85 @@ export default function UserManagement() {
               <CardTitle>Manajemen Pengguna</CardTitle>
               <CardDescription>Kelola data pengguna dan hak akses sistem</CardDescription>
             </div>
-            <Button onClick={loadUsers} variant="outline">
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
-            </Button>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                Menampilkan {users.length} dari {pagination.total} pengguna
+              </span>
+              <Button onClick={loadUsers} variant="outline" size="sm">
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Refresh
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex items-center space-x-2 flex-1">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center space-x-2">
                 <Search className="h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Cari berdasarkan nama, NIM, email, atau prodi..."
+                  placeholder="Cari berdasarkan nama, NIM, atau prodi..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  className="flex-1"
                 />
               </div>
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Filter Role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Semua Role</SelectItem>
-                  <SelectItem value="VOTER">Voter</SelectItem>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
-                  <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Filter Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Semua Status</SelectItem>
-                  <SelectItem value="voted">Sudah Vote</SelectItem>
-                  <SelectItem value="not-voted">Belum Vote</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex flex-wrap gap-2">
+                <Select value={prodiFilter} onValueChange={setProdiFilter}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Program Studi" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Semua Prodi</SelectItem>
+                    {prodiList.map((prodi) => (
+                      <SelectItem key={prodi} value={prodi}>
+                        {prodi}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={roleFilter} onValueChange={setRoleFilter}>
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="Filter Role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Semua Role</SelectItem>
+                    <SelectItem value="VOTER">Voter</SelectItem>
+                    <SelectItem value="ADMIN">Admin</SelectItem>
+                    <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="Filter Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Semua Status</SelectItem>
+                    <SelectItem value="voted">Sudah Vote</SelectItem>
+                    <SelectItem value="not-voted">Belum Vote</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="bg-muted/50 p-4 rounded-lg">
-                <div className="text-2xl font-bold">{users.length}</div>
+                <div className="text-2xl font-bold">{pagination.total}</div>
+                <div className="text-sm text-muted-foreground">Total Hasil Filter</div>
+              </div>
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <div className="text-2xl font-bold">{totalStats.totalUsers}</div>
                 <div className="text-sm text-muted-foreground">Total Pengguna</div>
               </div>
               <div className="bg-muted/50 p-4 rounded-lg">
-                <div className="text-2xl font-bold">{users.filter((u) => u.role === "VOTER").length}</div>
-                <div className="text-sm text-muted-foreground">Pemilih</div>
-              </div>
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <div className="text-2xl font-bold">{users.filter((u) => u.hasVoted).length}</div>
+                <div className="text-2xl font-bold">{totalStats.totalVoted}</div>
                 <div className="text-sm text-muted-foreground">Sudah Vote</div>
               </div>
               <div className="bg-muted/50 p-4 rounded-lg">
-                <div className="text-2xl font-bold">
-                  {users.filter((u) => u.role === "ADMIN" || u.role === "SUPER_ADMIN").length}
-                </div>
-                <div className="text-sm text-muted-foreground">Admin</div>
+                <div className="text-2xl font-bold">{totalStats.totalUsers - totalStats.totalVoted}</div>
+                <div className="text-sm text-muted-foreground">Belum Vote</div>
               </div>
             </div>
 
@@ -202,19 +252,18 @@ export default function UserManagement() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredUsers.length === 0 ? (
+                  {users.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                         Tidak ada pengguna yang ditemukan
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredUsers.map((user) => (
+                    users.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell>
                           <div>
                             <p className="font-semibold">{user.name}</p>
-                            <p className="text-sm text-muted-foreground">{user.email}</p>
                           </div>
                         </TableCell>
                         <TableCell>{user.nim}</TableCell>
@@ -258,6 +307,59 @@ export default function UserManagement() {
                   )}
                 </TableBody>
               </Table>
+            </div>
+
+            {/* Pagination */}
+            <div className="flex items-center justify-between pt-4">
+              <div className="text-sm text-muted-foreground">
+                Halaman {pagination.page} dari {pagination.totalPages}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(page - 1)}
+                  disabled={page === 1 || loading}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Sebelumnya
+                </Button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (pagination.totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (page <= 3) {
+                      pageNum = i + 1;
+                    } else if (page >= pagination.totalPages - 2) {
+                      pageNum = pagination.totalPages - 4 + i;
+                    } else {
+                      pageNum = page - 2 + i;
+                    }
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={page === pageNum ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setPage(pageNum)}
+                        disabled={loading}
+                        className="w-8 h-8 p-0"
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(page + 1)}
+                  disabled={page === pagination.totalPages || loading}
+                >
+                  Selanjutnya
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>

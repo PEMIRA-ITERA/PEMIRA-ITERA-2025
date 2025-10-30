@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
@@ -41,6 +42,8 @@ export default function SuperAdminPage() {
   })
   const [voteStats, setVoteStats] = useState<VoteStats[]>([])
   const [error, setError] = useState("")
+  const [prodiList, setProdiList] = useState<string[]>([])
+  const [selectedProdi, setSelectedProdi] = useState<string>("")
   const router = useRouter()
 
   useEffect(() => {
@@ -88,6 +91,13 @@ export default function SuperAdminPage() {
         setStats(data.stats)
         setVoteStats(data.voteStats || [])
       }
+      
+      // Load prodi list for export filter
+      const prodiResponse = await fetch('/api/admin/users?limit=1')
+      if (prodiResponse.ok) {
+        const prodiData = await prodiResponse.json()
+        setProdiList(prodiData.prodiList || [])
+      }
     } catch (err) {
       console.error("Error loading dashboard data:", err)
     }
@@ -114,6 +124,31 @@ export default function SuperAdminPage() {
         a.download = `${type}_export_${new Date().toISOString().split('T')[0]}.csv`
         a.click()
         window.URL.revokeObjectURL(url)
+      } else {
+        setError("Gagal mengekspor data")
+      }
+    } catch (err) {
+      setError("Gagal mengekspor data")
+    }
+  }
+
+  const exportByProdi = async () => {
+    if (!selectedProdi) {
+      setError("Pilih program studi terlebih dahulu")
+      return
+    }
+    
+    try {
+      const response = await fetch(`/api/admin/export?type=prodi&prodi=${encodeURIComponent(selectedProdi)}`)
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `export_${selectedProdi.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`
+        a.click()
+        window.URL.revokeObjectURL(url)
+        setError("")
       } else {
         setError("Gagal mengekspor data")
       }
@@ -364,19 +399,54 @@ export default function SuperAdminPage() {
                 <CardDescription>Download data pemilihan dalam format CSV</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <Button onClick={() => exportData("users")} variant="outline" className="w-full">
-                    <Users className="mr-2 h-4 w-4" />
-                    Export Data Pemilih
-                  </Button>
-                  <Button onClick={() => exportData("votes")} variant="outline" className="w-full">
-                    <Vote className="mr-2 h-4 w-4" />
-                    Export Data Voting
-                  </Button>
-                  <Button onClick={() => exportData("all")} className="w-full">
-                    <Download className="mr-2 h-4 w-4" />
-                    Export Semua Data
-                  </Button>
+                <div className="space-y-6">
+                  {/* Export by Prodi */}
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-sm">Export Berdasarkan Program Studi</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Export data mahasiswa berdasarkan program studi (Nama, NIM, Prodi, Status Vote, Nama Calon Presma)
+                    </p>
+                    <div className="flex gap-3">
+                      <Select value={selectedProdi} onValueChange={setSelectedProdi}>
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="Pilih Program Studi" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {prodiList.map((prodi) => (
+                            <SelectItem key={prodi} value={prodi}>
+                              {prodi}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button 
+                        onClick={exportByProdi} 
+                        disabled={!selectedProdi}
+                        className="min-w-[150px]"
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Export Prodi
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-6">
+                    <h4 className="font-semibold text-sm mb-3">Export Data Lengkap</h4>
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <Button onClick={() => exportData("users")} variant="outline" className="w-full">
+                        <Users className="mr-2 h-4 w-4" />
+                        Export Data Pemilih
+                      </Button>
+                      <Button onClick={() => exportData("votes")} variant="outline" className="w-full">
+                        <Vote className="mr-2 h-4 w-4" />
+                        Export Data Voting
+                      </Button>
+                      <Button onClick={() => exportData("all")} className="w-full">
+                        <Download className="mr-2 h-4 w-4" />
+                        Export Semua Data
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>

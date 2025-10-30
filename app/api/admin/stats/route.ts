@@ -12,12 +12,21 @@ export async function GET(request: NextRequest) {
       return authResult
     }
 
+    // Get today's date range (start and end of today)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+
     // Run all queries in parallel for performance and compute fields expected by client
     const [
       totalUsers,
       totalVotes,
       totalCandidates,
       pendingValidations,
+      totalValidated,
+      todayValidations,
+      totalVoted,
       candidateWithCounts
     ] = await Promise.all([
       // Total registered voters
@@ -32,6 +41,28 @@ export async function GET(request: NextRequest) {
           isValidated: false,
           isUsed: false,
           expiresAt: { gte: new Date() }
+        }
+      }),
+      // Total validated sessions
+      prisma.votingSession.count({
+        where: {
+          isValidated: true
+        }
+      }),
+      // Today's validations
+      prisma.votingSession.count({
+        where: {
+          isValidated: true,
+          validatedAt: {
+            gte: today,
+            lt: tomorrow
+          }
+        }
+      }),
+      // Total users who have voted
+      prisma.user.count({
+        where: {
+          hasVoted: true
         }
       }),
       // Candidate vote counts
@@ -56,6 +87,9 @@ export async function GET(request: NextRequest) {
       totalVotes,
       totalCandidates,
       pendingValidations,
+      totalValidated,
+      todayValidations,
+      totalVoted,
       votingPercentage
     }
 

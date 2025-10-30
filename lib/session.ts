@@ -67,7 +67,6 @@ export async function getUserFromRequest(request: NextRequest) {
       where: { id: decoded.userId },
       select: {
         id: true,
-        email: true,
         name: true,
         nim: true,
         prodi: true,
@@ -77,8 +76,7 @@ export async function getUserFromRequest(request: NextRequest) {
       }
     }))
 
-    // Verify user still exists and email matches token
-    if (!user || user.email !== decoded.email) {
+    if (!user) {
       return null
     }
 

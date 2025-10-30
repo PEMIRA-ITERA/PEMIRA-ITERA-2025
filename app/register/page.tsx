@@ -41,8 +41,6 @@ export default function RegisterPage() {
     nim: "",
     name: "",
     prodi: "",
-    gender: "",
-    phone: "",
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -61,11 +59,7 @@ export default function RegisterPage() {
     return nimPattern.test(nim)
   }
 
-  const validatePhone = (phone: string) => {
-    // Indonesian phone number validation
-    const phonePattern = /^(\+62|62|0)[0-9]{9,12}$/
-    return phonePattern.test(phone)
-  }
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -79,11 +73,7 @@ export default function RegisterPage() {
       return
     }
 
-    if (formData.phone && !validatePhone(formData.phone)) {
-      setError("Format nomor telepon tidak valid")
-      setLoading(false)
-      return
-    }
+    
 
     try {
       // Call register API
@@ -98,8 +88,6 @@ export default function RegisterPage() {
           nim: formData.nim,
           name: formData.name,
           prodi: formData.prodi,
-          gender: formData.gender,
-          phone: formData.phone || null,
         }),
       })
 
@@ -236,37 +224,7 @@ export default function RegisterPage() {
                 </Select>
               </div>
 
-              {/* Gender */}
-              <div className="space-y-2">
-                <Label htmlFor="gender">Jenis Kelamin *</Label>
-                <Select
-                  value={formData.gender}
-                  onValueChange={(value) => handleInputChange("gender", value)}
-                  disabled={loading}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih jenis kelamin" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="L">Laki-laki</SelectItem>
-                    <SelectItem value="P">Perempuan</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Phone */}
-              <div className="space-y-2">
-                <Label htmlFor="phone">Nomor Telepon</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="Contoh: 081234567890"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
-                  disabled={loading}
-                />
-                <p className="text-xs text-muted-foreground">Opsional - untuk keperluan komunikasi jika diperlukan</p>
-              </div>
+              
 
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? (

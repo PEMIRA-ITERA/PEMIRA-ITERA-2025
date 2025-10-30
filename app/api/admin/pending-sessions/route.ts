@@ -25,14 +25,14 @@ export async function GET(request: NextRequest) {
           select: {
             name: true,
             nim: true,
-            prodi: true,
-            email: true
+            prodi: true
           }
         }
       },
       orderBy: {
         createdAt: 'desc'
-      }
+      },
+      take: 10
     })
 
     return NextResponse.json({ sessions })

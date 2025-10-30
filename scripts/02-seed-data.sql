@@ -26,19 +26,19 @@ INSERT INTO "Candidate" ("name", "nim", "prodi", "visi", "misi", "photo") VALUES
 
 -- Insert sample users (admin and super admin) with passwords
 -- Passwords: superadmin123, admin123, admin123
-INSERT INTO "User" ("email", "nim", "name", "prodi", "gender", "phone", "role", "password") VALUES
-('superadmin@itera.ac.id', '999999999', 'Super Administrator', 'Sistem Informasi', 'L', '081234567890', 'SUPER_ADMIN', 'superadmin123'),
-('admin1@itera.ac.id', '888888888', 'Admin Panitia 1', 'Teknik Informatika', 'P', '081234567891', 'ADMIN', 'admin123'),
-('admin2@itera.ac.id', '777777777', 'Admin Panitia 2', 'Teknik Sipil', 'L', '081234567892', 'ADMIN', 'admin123');
+INSERT INTO "User" ("email", "nim", "name", "prodi", "role", "password") VALUES
+('superadmin@itera.ac.id', '999999999', 'Super Administrator', 'Sistem Informasi', 'SUPER_ADMIN', 'superadmin123'),
+('admin1@itera.ac.id', '888888888', 'Admin Panitia 1', 'Teknik Informatika', 'ADMIN', 'admin123'),
+('admin2@itera.ac.id', '777777777', 'Admin Panitia 2', 'Teknik Sipil', 'ADMIN', 'admin123');
 
 -- Insert sample voters for testing with password information
 -- Passwords: mahasiswa123 for all student accounts
-INSERT INTO "User" ("email", "nim", "name", "prodi", "gender", "phone", "role", "password") VALUES
-('mahasiswa1@student.itera.ac.id', '121450100', 'Budi Santoso', 'Teknik Informatika', 'L', '081234567893', 'VOTER', 'mahasiswa123'),
-('mahasiswa2@student.itera.ac.id', '121450101', 'Siti Nurhaliza', 'Teknik Sipil', 'P', '081234567894', 'VOTER', 'mahasiswa123'),
-('mahasiswa3@student.itera.ac.id', '121450102', 'Andi Wijaya', 'Teknik Elektro', 'L', '081234567895', 'VOTER', 'mahasiswa123'),
-('mahasiswa4@student.itera.ac.id', '121450103', 'Maya Sari', 'Teknik Kimia', 'P', '081234567896', 'VOTER', 'mahasiswa123'),
-('mahasiswa5@student.itera.ac.id', '121450104', 'Reza Pratama', 'Teknik Mesin', 'L', '081234567897', 'VOTER', 'mahasiswa123');
+INSERT INTO "User" ("email", "nim", "name", "prodi", "role", "password") VALUES
+('mahasiswa1@student.itera.ac.id', '121450100', 'Budi Santoso', 'Teknik Informatika', 'VOTER', 'mahasiswa123'),
+('mahasiswa2@student.itera.ac.id', '121450101', 'Siti Nurhaliza', 'Teknik Sipil', 'VOTER', 'mahasiswa123'),
+('mahasiswa3@student.itera.ac.id', '121450102', 'Andi Wijaya', 'Teknik Elektro', 'VOTER', 'mahasiswa123'),
+('mahasiswa4@student.itera.ac.id', '121450103', 'Maya Sari', 'Teknik Kimia', 'VOTER', 'mahasiswa123'),
+('mahasiswa5@student.itera.ac.id', '121450104', 'Reza Pratama', 'Teknik Mesin', 'VOTER', 'mahasiswa123');
 
 -- TEST ACCOUNTS AND PASSWORDS:
 

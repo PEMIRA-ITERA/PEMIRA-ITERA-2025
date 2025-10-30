@@ -30,7 +30,6 @@ interface Candidate {
 interface MeUser {
   id: string
   name: string
-  email: string
   nim: string
   role: string
   hasVoted: boolean
@@ -294,14 +293,10 @@ export default function VotePage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Nama</p>
                   <p className="font-semibold">{user.user.name}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="font-semibold">{user.user.email}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">NIM</p>

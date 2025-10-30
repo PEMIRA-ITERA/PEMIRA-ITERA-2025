@@ -11,8 +11,6 @@ CREATE TABLE "User" (
     "nim" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "prodi" TEXT NOT NULL,
-    "gender" TEXT NOT NULL,
-    "phone" TEXT,
     "role" "Role" NOT NULL DEFAULT 'VOTER',
     "hasVoted" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

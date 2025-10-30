@@ -12,13 +12,9 @@ datasource db {
 
 model User {
   id          String   @id @default(cuid())
-  email       String   @unique
   nim         String   @unique
   name        String
   prodi       String
-  gender      String
-  phone       String?
-  password    String
   role        Role     @default(VOTER)
   hasVoted    Boolean  @default(false)
   createdAt   DateTime @default(now())

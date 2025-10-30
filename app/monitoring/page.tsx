@@ -26,6 +26,12 @@ interface VoteStatsItem {
   percentage: number
 }
 
+interface ProdiVoteStats {
+  prodi: string
+  totalVotes: number
+  candidates: { name: string; count: number }[]
+}
+
 interface SystemStatusPayload {
   serverTime: string
   nodeVersion: string
@@ -49,6 +55,7 @@ export default function MonitoringPage() {
     votingPercentage: 0,
   })
   const [voteStats, setVoteStats] = useState<VoteStatsItem[]>([])
+  const [prodiVoteStats, setProdiVoteStats] = useState<ProdiVoteStats[]>([])
   const [recentValidations, setRecentValidations] = useState<any[]>([])
   const [systemStatus, setSystemStatus] = useState<SystemStatusPayload | null>(null)
   const [logs, setLogs] = useState<any[]>([])
@@ -110,6 +117,7 @@ export default function MonitoringPage() {
       const res = await ApiClient.getMonitoringStats()
       setStats(res.stats)
       setVoteStats(res.voteStats || [])
+      setProdiVoteStats(res.prodiVoteStats || [])
     } catch (e) {
       console.warn("Failed loading stats", e)
     }
@@ -209,6 +217,38 @@ export default function MonitoringPage() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
+            {/* Prodi Vote Statistics */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Statistik Vote per Program Studi</CardTitle>
+                <CardDescription>Total suara yang sudah masuk dari setiap program studi dan kandidat yang dipilih</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {prodiVoteStats.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Belum ada data vote per prodi</p>
+                  ) : (
+                    prodiVoteStats.map((prodiStat) => (
+                      <div key={prodiStat.prodi} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold text-sm">{prodiStat.prodi}</h4>
+                          <Badge variant="secondary">{nf.format(prodiStat.totalVotes)} suara</Badge>
+                        </div>
+                        <div className="space-y-2">
+                          {prodiStat.candidates.map((candidate) => (
+                            <div key={candidate.name} className="flex items-center justify-between text-sm">
+                              <span className="text-muted-foreground">{candidate.name}</span>
+                              <span className="font-medium">{nf.format(candidate.count)} suara</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -281,7 +321,7 @@ export default function MonitoringPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Validasi Terbaru</CardTitle>
-                <CardDescription>Daftar pemilih yang baru saja divalidasi</CardDescription>
+                <CardDescription>10 validasi terbaru dari pemilih</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="w-full overflow-x-auto">
@@ -388,7 +428,7 @@ export default function MonitoringPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Activity className="h-5 w-5"/>Aktivitas Terbaru</CardTitle>
-                <CardDescription>Ringkasan 100 aktivitas terakhir (login, validasi, dan lainnya)</CardDescription>
+                <CardDescription>10 aktivitas terbaru (login, validasi, dan lainnya)</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="w-full overflow-x-auto">

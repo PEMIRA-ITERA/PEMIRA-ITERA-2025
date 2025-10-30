@@ -1,106 +1,109 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json()
+    const { email, password, nim, name, prodi } = await request.json()
     
-    console.log('Login attempt for email:', email)
+    // Login dengan NIM + Nama + Prodi (untuk mahasiswa)
+    if (nim && name && prodi) {
+      console.log('Login attempt with NIM:', nim)
+      
+      const nimTrim = String(nim).trim()
+      const nimDigits = nimTrim.replace(/\D/g, '')
+      const nameTrim = String(name).trim()
+      const prodiTrim = String(prodi).trim()
 
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: 'Email dan password wajib diisi' },
-        { status: 400 }
-      )
-    }
-
-    // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        nim: true,
-        prodi: true,
-        role: true,
-        hasVoted: true,
-        password: true
-      }
-    })
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Email atau password salah' },
-        { status: 401 }
-      )
-    }
-
-    // Check password
-    const isPasswordValid = await bcrypt.compare(password, user.password)
-    
-    if (!isPasswordValid) {
-      return NextResponse.json(
-        { error: 'Email atau password salah' },
-        { status: 401 }
-      )
-    }
-
-    console.log('Login successful for user:', user.email)
-    // Log login event (for monitoring)
-    try {
-      await prisma.adminLog.create({
-        data: {
-          adminId: user.id,
-          action: 'LOGIN_SUCCESS',
-          target: user.email,
-          details: { role: user.role },
-          ipAddress: request.headers.get('x-forwarded-for') || request.ip || ''
+      // Find user by NIM
+      const user = await prisma.user.findUnique({
+        where: { nim: nimDigits },
+        select: {
+          id: true,
+          name: true,
+          nim: true,
+          prodi: true,
+          role: true,
+          hasVoted: true
         }
       })
-    } catch (e) {
-      console.warn('Failed to log login event:', e)
+
+      if (!user) {
+        return NextResponse.json(
+          { error: 'NIM tidak ditemukan' },
+          { status: 401 }
+        )
+      }
+
+      // Validasi nama dan prodi (case insensitive)
+      if (user.name.toLowerCase() !== nameTrim.toLowerCase() || 
+          user.prodi.toLowerCase() !== prodiTrim.toLowerCase()) {
+        return NextResponse.json(
+          { error: 'Data mahasiswa tidak valid' },
+          { status: 401 }
+        )
+      }
+
+      console.log('Login successful for student:', user.nim)
+      
+      // Log login event
+      try {
+        await prisma.adminLog.create({
+          data: {
+            adminId: user.id,
+            action: 'STUDENT_LOGIN_SUCCESS',
+            target: user.nim,
+            details: { role: user.role },
+            ipAddress: request.headers.get('x-forwarded-for') || request.ip || ''
+          }
+        })
+      } catch (e) {
+        console.warn('Failed to log login event:', e)
+      }
+
+      // Create response with user data
+      const userWithoutPassword = user
+      
+      const response = NextResponse.json({
+        user: userWithoutPassword,
+        message: 'Login berhasil'
+      })
+
+      // Create JWT session token
+      const jwtSecret = process.env.JWT_SECRET || 'itera-election-secret-key-2025'
+      const sessionToken = jwt.sign(
+        { 
+          userId: user.id, 
+          role: user.role,
+          iat: Math.floor(Date.now() / 1000)
+        },
+        jwtSecret,
+        { expiresIn: '7d' }
+      )
+
+      // Set secure session cookie
+      response.cookies.set('user-session', sessionToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        path: '/'
+      })
+
+      return response;
     }
-
-    // Create response with user data (exclude password)
-    const { password: _, ...userWithoutPassword } = user
     
-    const response = NextResponse.json({
-      user: userWithoutPassword,
-      message: 'Login berhasil'
-    })
 
-    // Create JWT session token
-    const jwtSecret = process.env.JWT_SECRET || 'itera-election-secret-key-2025'
-    const sessionToken = jwt.sign(
-      { 
-        userId: user.id, 
-        email: user.email, 
-        role: user.role,
-        iat: Math.floor(Date.now() / 1000)
-      },
-      jwtSecret,
-      { expiresIn: '7d' }
-    )
-
-    // Set secure session cookie
-    response.cookies.set('user-session', sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/'
-    })
-
-    return response
-
+    return NextResponse.json(
+      { error: 'Data login tidak valid' },
+      { status: 400 }
+    );
+    
   } catch (error) {
     console.error('Login error:', error)
     return NextResponse.json(
       { error: 'Terjadi kesalahan internal server' },
       { status: 500 }
-    )
+    );
   }
 }

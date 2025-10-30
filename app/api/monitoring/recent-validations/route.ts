@@ -12,11 +12,11 @@ export async function GET(request: NextRequest) {
     const sessions = await prisma.votingSession.findMany({
       where: { isValidated: true },
       include: {
-        user: { select: { name: true, nim: true, prodi: true, email: true } },
+        user: { select: { name: true, nim: true, prodi: true } },
         validator: { select: { name: true, role: true } },
       },
       orderBy: { createdAt: 'desc' },
-      take: 50,
+      take: 10,
     })
 
     return NextResponse.json({ sessions })

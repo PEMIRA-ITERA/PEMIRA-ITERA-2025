@@ -31,9 +31,48 @@ export async function GET(request: NextRequest) {
   }
 
   const { searchParams } = new URL(request.url)
-  const type = (searchParams.get('type') || 'all').toLowerCase() as 'users' | 'votes' | 'all'
+  const type = (searchParams.get('type') || 'all').toLowerCase() as 'users' | 'votes' | 'all' | 'prodi'
+  const prodi = searchParams.get('prodi') || ''
 
   try {
+    // Export by prodi with custom format
+    if (type === 'prodi' && prodi) {
+      const users = await prisma.user.findMany({
+        where: {
+          prodi: {
+            contains: prodi,
+            mode: 'insensitive'
+          }
+        },
+        include: {
+          votes: {
+            include: {
+              candidate: true
+            }
+          }
+        },
+        orderBy: { nim: 'asc' }
+      })
+
+      const exportData = users.map(u => ({
+        'Nama': u.name,
+        'NIM': u.nim,
+        'Program Studi': u.prodi,
+        'Status Vote': u.hasVoted ? 'Sudah Vote' : 'Belum Vote',
+        'Nama Calon Presma': u.votes[0]?.candidate?.name || '-'
+      }))
+
+      const csv = toCSV(exportData)
+      const filename = `export_${prodi.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`
+
+      const headers = new Headers({
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': `attachment; filename="${filename}"`
+      })
+
+      return new NextResponse(csv, { status: 200, headers })
+    }
+
     // Preload datasets as needed
     const datasets: { users?: any[]; votes?: any[] } = {}
 
@@ -44,11 +83,8 @@ export async function GET(request: NextRequest) {
       datasets.users = users.map(u => ({
         id: u.id,
         name: u.name,
-        email: u.email,
         nim: u.nim,
         prodi: u.prodi,
-        gender: u.gender,
-        phone: u.phone ?? '',
         role: u.role,
         hasVoted: u.hasVoted,
         createdAt: u.createdAt.toISOString()
@@ -68,7 +104,6 @@ export async function GET(request: NextRequest) {
         createdAt: v.createdAt.toISOString(),
         userId: v.userId,
         userName: v.user?.name ?? '',
-        userEmail: v.user?.email ?? '',
         userNim: v.user?.nim ?? '',
         candidateId: v.candidateId,
         candidateName: v.candidate?.name ?? ''

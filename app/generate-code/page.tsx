@@ -24,7 +24,6 @@ interface VotingSession {
 interface MeUser {
   id: string
   name: string
-  email: string
   nim: string
   prodi?: string
   role: string
@@ -331,10 +330,6 @@ export default function GenerateCodePage() {
                 <div>
                   <p className="text-sm text-muted-foreground">Nama</p>
                   <p className="font-semibold">{user.user.name || 'Tidak tersedia'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="font-semibold">{user.user.email || 'Tidak tersedia'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">NIM</p>
