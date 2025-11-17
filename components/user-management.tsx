@@ -129,6 +129,8 @@ export default function UserManagement() {
         return "destructive"
       case "ADMIN":
         return "secondary"
+      case "MONITORING":
+        return "default"
       default:
         return "outline"
     }
@@ -203,6 +205,7 @@ export default function UserManagement() {
                     <SelectItem value="VOTER">Voter</SelectItem>
                     <SelectItem value="ADMIN">Admin</SelectItem>
                     <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                    <SelectItem value="MONITORING">Monitoring</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -299,6 +302,7 @@ export default function UserManagement() {
                               <SelectItem value="VOTER">Voter</SelectItem>
                               <SelectItem value="ADMIN">Admin</SelectItem>
                               <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                              <SelectItem value="MONITORING">Monitoring</SelectItem>
                             </SelectContent>
                           </Select>
                         </TableCell>

@@ -15,7 +15,7 @@ export async function PUT(
     const { role } = await request.json()
     const { userId } = params
 
-    if (!['VOTER', 'ADMIN', 'SUPER_ADMIN'].includes(role)) {
+    if (!['VOTER', 'ADMIN', 'SUPER_ADMIN', 'MONITORING'].includes(role)) {
       return NextResponse.json(
         { error: 'Invalid role' },
         { status: 400 }

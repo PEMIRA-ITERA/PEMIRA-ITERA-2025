@@ -63,7 +63,6 @@ export async function PUT(
         misi: misi.trim(),
         photo: photo || null,
         isActive: isActive !== undefined ? isActive : existingCandidate.isActive,
-        updatedAt: new Date()
       },
       include: {
         _count: {
@@ -83,7 +82,6 @@ export async function PUT(
       isActive: updatedCandidate.isActive,
       voteCount: updatedCandidate._count.votes,
       createdAt: updatedCandidate.createdAt,
-      updatedAt: updatedCandidate.updatedAt
     }
 
     console.log('✅ Candidate updated successfully')
@@ -106,6 +104,58 @@ export async function PUT(
       if (error.message === 'Admin access required') {
         return NextResponse.json(
           { error: 'Unauthorized' }, 
+          { status: 403 }
+        )
+      }
+    }
+
+    return NextResponse.json(
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    )
+  }
+}
+
+// DELETE candidate (soft delete: set isActive to false)
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const user = await requireAdmin(request)
+
+    const candidate = await prisma.candidate.findUnique({
+      where: { id: params.id },
+    })
+
+    if (!candidate) {
+      return NextResponse.json(
+        { error: 'Candidate not found' },
+        { status: 404 }
+      )
+    }
+
+    await prisma.candidate.update({
+      where: { id: params.id },
+      data: {
+        isActive: false,
+      },
+    })
+
+    return NextResponse.json({ message: 'Candidate deleted successfully' })
+  } catch (error) {
+    console.error('💥 Delete candidate error:', error)
+
+    if (error instanceof Error) {
+      if (error.message === 'Authentication required') {
+        return NextResponse.json(
+          { error: 'Not authenticated' },
+          { status: 401 }
+        )
+      }
+      if (error.message === 'Admin access required') {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
           { status: 403 }
         )
       }

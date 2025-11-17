@@ -251,19 +251,23 @@ export default function VotePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background p-4">
-      <div className="container mx-auto max-w-4xl py-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background px-3 sm:px-4 py-8">
+      <div className="container mx-auto max-w-4xl">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center gap-3 mb-3 px-4 py-2 rounded-full bg-primary/5 border border-primary/10">
+            <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center shadow-sm">
               <Vote className="h-7 w-7 text-primary-foreground" />
             </div>
             <div className="text-left">
-              <h1 className="font-bold text-xl text-foreground">ITERA Election</h1>
-              <p className="text-sm text-muted-foreground">Pilih Kandidat</p>
+              <h1 className="font-semibold text-base text-primary">Tahap Voting</h1>
+              <p className="text-xs text-muted-foreground">Pilih satu kandidat terbaik menurut Anda</p>
             </div>
           </div>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Pemilihan Presiden Mahasiswa</h2>
+          <p className="mt-2 text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
+            Baca visi dan misi setiap kandidat dengan seksama, lalu pastikan pilihan Anda sebelum mengirimkan suara.
+          </p>
         </div>
 
         {/* Alert Messages */}
@@ -308,23 +312,24 @@ export default function VotePage() {
         )}
 
         {/* Instructions */}
-        <Alert className="mb-8">
-          <CheckCircle className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Petunjuk Voting:</strong> Pilih salah satu kandidat di bawah ini dengan mengklik kartu kandidat.
-            Setelah memilih, klik tombol "Vote" untuk mengonfirmasi pilihan Anda. Pilihan tidak dapat diubah setelah
-            dikonfirmasi.
+        <Alert className="mb-8 border-primary/20 bg-primary/5">
+          <CheckCircle className="h-4 w-4 text-primary" />
+          <AlertDescription className="text-sm leading-relaxed">
+            <span className="font-semibold text-primary">Petunjuk Voting:</span>{" "}
+            Pilih satu kandidat di bawah ini dengan mengetuk kartu kandidat.
+            Setelah memilih, klik tombol <span className="font-semibold">"Vote Sekarang"</span> untuk mengonfirmasi.
+            <span className="block mt-1 text-xs text-muted-foreground">Pilihan tidak dapat diubah setelah dikonfirmasi.</span>
           </AlertDescription>
         </Alert>
 
         {/* Candidates Grid */}
         {candidates.length > 0 ? (
           <>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-10">
               {candidates.map((candidate) => (
                 <Card
                   key={candidate.id}
-                  className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
+                  className={`h-full flex flex-col cursor-pointer transition-all duration-200 hover:shadow-lg ${
                     selectedCandidate === candidate.id ? "ring-2 ring-primary bg-primary/5" : "hover:shadow-md"
                   }`}
                   onClick={() => handleCandidateSelect(candidate.id)}
@@ -353,7 +358,7 @@ export default function VotePage() {
                       </div>
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="mt-auto">
                     <div className="space-y-3">
                       <div>
                         <p className="text-sm font-semibold text-muted-foreground mb-1">Visi:</p>

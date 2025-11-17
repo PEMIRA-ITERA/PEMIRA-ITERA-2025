@@ -425,13 +425,19 @@ export default function AdminPage() {
         </div>
 
         {/* Main Content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 shadow-sm">
-            <TabsTrigger value="scan" className="flex items-center gap-2">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-16 my-16">
+          <TabsList className="w-full flex flex-col sm:grid sm:grid-cols-3 shadow-sm">
+            <TabsTrigger
+              value="scan"
+              className="flex items-center justify-center gap-2 w-full text-sm py-3 sm:py-2"
+            >
               <QrCode className="h-4 w-4" />
               Scan QR Code
             </TabsTrigger>
-            <TabsTrigger value="pending" className="flex items-center gap-2">
+            <TabsTrigger
+              value="pending"
+              className="flex items-center justify-center gap-2 w-full text-sm py-3 sm:py-2"
+            >
               <Clock className="h-4 w-4" />
               Menunggu Validasi
               {pendingSessions.length > 0 && (
@@ -440,7 +446,10 @@ export default function AdminPage() {
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="recent" className="flex items-center gap-2">
+            <TabsTrigger
+              value="recent"
+              className="flex items-center justify-center gap-2 w-full text-sm py-3 sm:py-2"
+            >
               <CheckCircle className="h-4 w-4" />
               Riwayat Validasi
             </TabsTrigger>
@@ -451,15 +460,6 @@ export default function AdminPage() {
             <div className="grid lg:grid-cols-2 gap-6">
               {/* QR Scanner Card */}
               <Card className="shadow-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Camera className="h-5 w-5" />
-                    Scan QR Code
-                  </CardTitle>
-                  <CardDescription>
-                    Gunakan kamera untuk memindai QR code mahasiswa yang ingin memilih
-                  </CardDescription>
-                </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {!showScanner ? (

@@ -30,6 +30,19 @@ interface VoteStats {
   percentage: number
 }
 
+interface ProdiVoteCandidateStats {
+  candidateId: string
+  candidateName: string
+  voteCount: number
+  percentage: number
+}
+
+interface ProdiVoteStats {
+  prodi: string
+  totalVotes: number
+  candidates: ProdiVoteCandidateStats[]
+}
+
 export default function SuperAdminPage() {
   const [admin, setAdmin] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -41,6 +54,7 @@ export default function SuperAdminPage() {
     votingPercentage: 0,
   })
   const [voteStats, setVoteStats] = useState<VoteStats[]>([])
+  const [prodiVoteStats, setProdiVoteStats] = useState<ProdiVoteStats[]>([])
   const [error, setError] = useState("")
   const [prodiList, setProdiList] = useState<string[]>([])
   const [selectedProdi, setSelectedProdi] = useState<string>("")
@@ -90,6 +104,7 @@ export default function SuperAdminPage() {
         const data = await response.json()
         setStats(data.stats)
         setVoteStats(data.voteStats || [])
+        setProdiVoteStats(data.prodiVoteStats || [])
       }
       
       // Load prodi list for export filter
@@ -368,6 +383,41 @@ export default function SuperAdminPage() {
                       </div>
                     </div>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Perolehan Suara per Program Studi</CardTitle>
+                <CardDescription>Distribusi suara berdasarkan prodi dan pilihan calon</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {prodiVoteStats.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Belum ada data suara per program studi.</p>
+                  ) : (
+                    prodiVoteStats.map((prodiStats) => (
+                      <div key={prodiStats.prodi} className="border rounded-lg p-4 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold">{prodiStats.prodi}</span>
+                          <span className="text-sm text-muted-foreground">
+                            Total suara: {prodiStats.totalVotes}
+                          </span>
+                        </div>
+                        <div className="space-y-1 text-sm">
+                          {prodiStats.candidates.map((candidate) => (
+                            <div key={candidate.candidateId} className="flex items-center justify-between">
+                              <span>{candidate.candidateName}</span>
+                              <span className="text-muted-foreground">
+                                {candidate.voteCount} suara ({candidate.percentage}%)
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>

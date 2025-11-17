@@ -50,6 +50,8 @@ export default function CandidateManagement() {
     photo: "",
   })
 
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+
   // Form validation state
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
@@ -95,11 +97,12 @@ export default function CandidateManagement() {
       errors.nim = 'NIM harus berupa angka'
     }
 
-    // Validate URL if photo is provided
+    // Validate URL if photo is provided (allow absolute or relative URLs like /uploads/..)
     if (formData.photo.trim()) {
-      try {
-        new URL(formData.photo)
-      } catch {
+      const value = formData.photo.trim()
+      const isAbsoluteUrl = /^https?:\/\//i.test(value)
+      const isRelativeUrl = value.startsWith("/")
+      if (!isAbsoluteUrl && !isRelativeUrl) {
         errors.photo = 'URL foto tidak valid'
       }
     }
@@ -124,13 +127,36 @@ export default function CandidateManagement() {
     try {
       console.log('📤 Form submission:', { formData, editingCandidate })
 
+      let finalPhotoUrl = formData.photo
+
+      // If user selected a new photo file, upload it first
+      if (photoFile) {
+        const uploadFormData = new FormData()
+        uploadFormData.append('file', photoFile)
+
+        const uploadResponse = await fetch('/api/upload-candidate-photo', {
+          method: 'POST',
+          body: uploadFormData,
+        })
+
+        const uploadResult = await uploadResponse.json()
+
+        if (!uploadResponse.ok) {
+          throw new Error(uploadResult.error || 'Gagal mengupload foto kandidat')
+        }
+
+        finalPhotoUrl = uploadResult.url || ''
+      }
+
+      const payload = { ...formData, photo: finalPhotoUrl }
+
       if (editingCandidate) {
         // Update existing candidate
-        await ApiClient.updateCandidate(editingCandidate.id, formData)
+        await ApiClient.updateCandidate(editingCandidate.id, payload)
         setSuccess("Kandidat berhasil diupdate")
       } else {
         // Create new candidate
-        await ApiClient.createCandidate(formData)
+        await ApiClient.createCandidate(payload)
         setSuccess("Kandidat berhasil ditambahkan")
       }
 
@@ -155,6 +181,7 @@ export default function CandidateManagement() {
       misi: candidate.misi,
       photo: candidate.photo || "",
     })
+    setPhotoFile(null)
     setFormErrors({}) // Clear any previous errors
     setShowDialog(true)
   }
@@ -186,6 +213,7 @@ export default function CandidateManagement() {
 
   const resetForm = () => {
     setFormData({ name: "", nim: "", prodi: "", visi: "", misi: "", photo: "" })
+    setPhotoFile(null)
     setFormErrors({})
     setEditingCandidate(null)
     setShowDialog(false)
@@ -286,16 +314,30 @@ export default function CandidateManagement() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="photo">URL Foto</Label>
-                    <Input
-                      id="photo"
-                      type="url"
-                      value={formData.photo}
-                      onChange={(e) => handleInputChange('photo', e.target.value)}
-                      placeholder="https://example.com/photo.jpg (opsional)"
-                      className={formErrors.photo ? 'border-red-500' : ''}
-                    />
-                    {formErrors.photo && <p className="text-sm text-red-500">{formErrors.photo}</p>}
+                    <Label htmlFor="photo">Foto Kandidat</Label>
+                    <div className="space-y-2">
+                      <Input
+                        id="photo-file"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null
+                          setPhotoFile(file)
+                        }}
+                      />
+                      <Input
+                        id="photo"
+                        type="url"
+                        value={formData.photo}
+                        onChange={(e) => handleInputChange('photo', e.target.value)}
+                        placeholder="URL foto (opsional, bisa kosong jika upload dari laptop)"
+                        className={formErrors.photo ? 'border-red-500' : ''}
+                      />
+                      {formErrors.photo && <p className="text-sm text-red-500">{formErrors.photo}</p>}
+                      <p className="text-xs text-muted-foreground">
+                        Anda dapat mengisi URL foto, atau memilih file gambar dari laptop. Jika keduanya diisi, foto dari laptop akan digunakan.
+                      </p>
+                    </div>
                   </div>
                   
                   <div className="space-y-2">

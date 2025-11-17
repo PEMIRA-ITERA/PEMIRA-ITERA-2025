@@ -27,7 +27,8 @@ export async function GET(request: NextRequest) {
       totalValidated,
       todayValidations,
       totalVoted,
-      candidateWithCounts
+      candidateWithCounts,
+      votesWithUserAndCandidate
     ] = await Promise.all([
       // Total registered voters
       prisma.user.count({ where: { role: 'VOTER' } }),
@@ -70,6 +71,17 @@ export async function GET(request: NextRequest) {
         where: { isActive: true },
         include: { _count: { select: { votes: true } } },
         orderBy: { createdAt: 'asc' }
+      }),
+      // Votes joined with user and candidate for per-prodi aggregation
+      prisma.vote.findMany({
+        include: {
+          user: {
+            select: { prodi: true }
+          },
+          candidate: {
+            select: { id: true, name: true }
+          }
+        }
       })
     ])
 
@@ -82,6 +94,48 @@ export async function GET(request: NextRequest) {
       percentage: totalVotes > 0 ? parseFloat(((c._count.votes / totalVotes) * 100).toFixed(2)) : 0
     }))
 
+    // Aggregate votes by program studi (prodi) and candidate
+    const prodiCandidateMap: Record<string, Record<string, { candidateId: string; candidateName: string; voteCount: number }>> = {}
+    const prodiTotals: Record<string, number> = {}
+
+    for (const vote of votesWithUserAndCandidate) {
+      const prodi = vote.user?.prodi || 'Tidak Diketahui'
+      const candidateId = vote.candidate.id
+      const candidateName = vote.candidate.name
+
+      if (!prodiCandidateMap[prodi]) {
+        prodiCandidateMap[prodi] = {}
+        prodiTotals[prodi] = 0
+      }
+
+      if (!prodiCandidateMap[prodi][candidateId]) {
+        prodiCandidateMap[prodi][candidateId] = {
+          candidateId,
+          candidateName,
+          voteCount: 0
+        }
+      }
+
+      prodiCandidateMap[prodi][candidateId].voteCount += 1
+      prodiTotals[prodi] += 1
+    }
+
+    const prodiVoteStats = Object.entries(prodiCandidateMap).map(([prodi, candidates]) => {
+      const totalInProdi = prodiTotals[prodi] || 0
+      const candidateStats = Object.values(candidates).map((c) => ({
+        candidateId: c.candidateId,
+        candidateName: c.candidateName,
+        voteCount: c.voteCount,
+        percentage: totalInProdi > 0 ? parseFloat(((c.voteCount / totalInProdi) * 100).toFixed(2)) : 0
+      }))
+
+      return {
+        prodi,
+        totalVotes: totalInProdi,
+        candidates: candidateStats
+      }
+    })
+
     const stats = {
       totalUsers,
       totalVotes,
@@ -93,7 +147,7 @@ export async function GET(request: NextRequest) {
       votingPercentage
     }
 
-    return NextResponse.json({ stats, voteStats })
+    return NextResponse.json({ stats, voteStats, prodiVoteStats })
 
   } catch (error) {
     console.error('Stats error:', error)

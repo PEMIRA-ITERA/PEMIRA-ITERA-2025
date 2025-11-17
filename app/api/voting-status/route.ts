@@ -32,7 +32,8 @@ export async function GET(request: NextRequest) {
         candidate: {
           select: {
             name: true,
-            nim: true
+            nim: true,
+            photo: true,
           }
         }
       }
@@ -60,6 +61,7 @@ export async function GET(request: NextRequest) {
         id: vote.id,
         candidateName: vote.candidate.name,
         candidateNim: vote.candidate.nim,
+        candidatePhoto: vote.candidate.photo,
         createdAt: vote.createdAt
       } : null,
       canVote

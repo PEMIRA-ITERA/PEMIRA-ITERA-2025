@@ -19,6 +19,7 @@ interface VoteData {
   id: string
   candidateName: string
   candidateNim: string
+  candidatePhoto?: string | null
   createdAt: string
 }
 
@@ -160,7 +161,7 @@ export default function SuccessPage() {
               </div>
               <CardTitle className="text-2xl text-green-800">Vote Berhasil Disimpan!</CardTitle>
               <CardDescription className="text-green-700">
-                Terima kasih telah berpartisipasi dalam Pemilihan Presiden Mahasiswa ITERA 2024
+                Terima kasih telah berpartisipasi dalam Pemilihan Presiden Mahasiswa ITERA 2025
               </CardDescription>
             </CardHeader>
           </Card>
@@ -202,9 +203,18 @@ export default function SuccessPage() {
                     <p className="text-sm text-muted-foreground mb-2">Kandidat yang Dipilih</p>
                     <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
                       <div className="relative w-16 h-16">
-                        <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
-                          <User className="h-8 w-8 text-gray-400" />
-                        </div>
+                        {voteData.candidatePhoto ? (
+                          <Image
+                            src={voteData.candidatePhoto}
+                            alt={voteData.candidateName}
+                            fill
+                            className="rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
+                            <User className="h-8 w-8 text-gray-400" />
+                          </div>
+                        )}
                       </div>
                       <div>
                         <h3 className="font-semibold text-lg">{voteData.candidateName}</h3>
@@ -241,41 +251,6 @@ export default function SuccessPage() {
             </CardContent>
           </Card>
 
-          {/* Voting Results Preview */}
-          {votingStats.length > 0 && (
-            <Card className="bg-blue-50 border-blue-200">
-              <CardHeader>
-                <CardTitle className="text-blue-800">Hasil Sementara</CardTitle>
-                <CardDescription className="text-blue-600">
-                  Data real-time dari sistem voting
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {votingStats
-                    .sort((a, b) => b.voteCount - a.voteCount)
-                    .map((candidate, index) => (
-                      <div key={candidate.candidateId} className="flex items-center justify-between p-3 bg-white rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-bold text-blue-800">
-                            {index + 1}
-                          </div>
-                          <div>
-                            <p className="font-semibold text-sm">{candidate.candidateName}</p>
-                            <p className="text-xs text-muted-foreground">{candidate.percentage}%</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-blue-800">{candidate.voteCount}</p>
-                          <p className="text-xs text-muted-foreground">suara</p>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Important Notes */}
           <Card className="bg-yellow-50 border-yellow-200">
             <CardHeader>
@@ -305,7 +280,7 @@ export default function SuccessPage() {
 
           {/* Footer */}
           <div className="text-center text-sm text-muted-foreground pt-8 border-t">
-            <p>Pemilihan Presiden Mahasiswa ITERA 2024</p>
+            <p>Pemilihan Presiden Mahasiswa ITERA 2025</p>
             <p>Sistem Voting Digital - Institut Teknologi Sumatera</p>
           </div>
         </div>

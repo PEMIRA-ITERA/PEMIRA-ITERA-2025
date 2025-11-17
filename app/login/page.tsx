@@ -10,39 +10,53 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Vote, ArrowLeft, Loader2, ChevronDown } from "@/lib/icons"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
+import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
 
-// Daftar program studi ITERA
+// Daftar program studi ITERA (hasil extract dari data CSV)
 const programStudi = [
-  "S1 TEKNIK GEOFISIKA",
-  "S1 TEKNIK GEOLOGI",
-  "S1 TEKNIK PERTAMBANGAN",
-  "S1 TEKNIK KIMIA",
-  "S1 TEKNIK FISIKA",
-  "S1 TEKNIK ELEKTRO",
-  "S1 TEKNIK MESIN",
-  "S1 TEKNIK MATERIAL",
-  "S1 TEKNIK INDUSTRI",
-  "S1 TEKNIK SISTEM ENERGI",
-  "S1 TEKNIK LINGKUNGAN",
-  "S1 TEKNIK KELAUTAN",
-  "S1 TEKNIK SIPIL",
   "S1 ARSITEKTUR",
-  "S1 PERENCANAAN WILAYAH DAN KOTA",
-  "S1 MATEMATIKA",
+  "S1 ARSITEKTUR LANSKAP",
+  "S1 BIOLOGI",
+  "S1 DESAIN KOMUNIKASI VISUAL",
+  "S1 FARMASI",
   "S1 FISIKA",
   "S1 KIMIA",
-  "S1 BIOLOGI",
-  "S1 FARMASI",
-  "S1 SAINS DATA",
-  "S1 TEKNOLOGI INFORMASI",
-  "S1 TEKNIK INFORMATIKA",
-  "S1 TEKNIK BIOSISTEM",
-  "S1 TEKNOLOGI PANGAN",
-  "S1 TEKNOLOGI INDUSTRI PERTANIAN",
+  "S1 MATEMATIKA",
+  "S1 PARIWISATA",
+  "S1 PERENCANAAN WILAYAH DAN KOTA",
+  "S1 REKAYASA INSTRUMENTASI DAN AUTOMASI",
   "S1 REKAYASA KEHUTANAN",
-  "S1 REKAYASA KOSMETIK"
-]
+  "S1 REKAYASA KOSMETIK",
+  "S1 REKAYASA MINYAK DAN GAS",
+  "S1 REKAYASA TATA KELOLA AIR TERPADU",
+  "S1 REKAYASA KEOLAHRAGAAN",
+  "S1 SAINS AKTUARIA",
+  "S1 SAINS ATMOSFER DAN KEPLANETAN",
+  "S1 SAINS DATA",
+  "S1 TEKNIK BIOMEDIS",
+  "S1 TEKNIK BIOSISTEM",
+  "S1 TEKNIK ELEKTRO",
+  "S1 TEKNIK FISIKA",
+  "S1 TEKNIK GEOLOGI",
+  "S1 TEKNIK GEOFISIKA",
+  "S1 TEKNIK GEOMATIKA",
+  "S1 TEKNIK INDUSTRI",
+  "S1 TEKNIK INFORMATIKA",
+  "S1 TEKNIK KELAUTAN",
+  "S1 TEKNIK KIMIA",
+  "S1 TEKNIK LINGKUNGAN",
+  "S1 TEKNIK MATERIAL",
+  "S1 TEKNIK MESIN",
+  "S1 TEKNIK PERKERETAAPIAN",
+  "S1 TEKNIK PERTAMBANGAN",
+  "S1 TEKNIK SIPIL",
+  "S1 TEKNIK SISTEM ENERGI",
+  "S1 TEKNIK TELEKOMUNIKASI",
+  "S1 TEKNOLOGI INDUSTRI PERTANIAN",
+  "S1 TEKNOLOGI PANGAN",
+];
+
 
 function LoginForm() {
   const [nim, setNim] = useState("")
@@ -158,11 +172,18 @@ function LoginForm() {
             Kembali ke Beranda
           </Link>
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center">
-              <Vote className="h-7 w-7 text-primary-foreground" />
+            <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center overflow-hidden">
+              <Image
+                src="/logo.jpg"
+                alt="Logo ITERA Election"
+                width={48}
+                height={48}
+                className="object-contain"
+                priority
+              />
             </div>
             <div className="text-left">
-              <h1 className="font-bold text-xl text-foreground">ITERA Election</h1>
+              <h1 className="font-bold text-xl text-foreground">PEMIRA KM-ITERA 2025</h1>
               <p className="text-sm text-muted-foreground">Pemilihan Presiden Mahasiswa</p>
             </div>
           </div>
@@ -187,7 +208,7 @@ function LoginForm() {
                 <Input
                   id="nim"
                   type="text"
-                  placeholder="Masukkan NIM Anda"
+                  placeholder="Masukkan NIM"
                   value={nim}
                   onChange={(e) => {
                     const onlyDigits = e.target.value.replace(/\D/g, "")
@@ -204,7 +225,7 @@ function LoginForm() {
                 <Input
                   id="name"
                   type="text"
-                  placeholder="Masukkan Nama Lengkap Anda"
+                  placeholder="Masukkan Nama Lengkap"
                   value={name}
                   onChange={(e) => setName(e.target.value.toUpperCase())}
                   required
@@ -248,24 +269,6 @@ function LoginForm() {
                 )}
               </Button>
             </form>
-
-            <div className="mt-4 text-center">
-              <Link
-                href="/forgot-password"
-                className="text-sm text-blue-600 hover:underline"
-              >
-                Lupa Password?
-              </Link>
-            </div>
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                Belum punya akun?{" "}
-                <Button variant="link" className="p-0 h-auto font-normal">
-                  Hubungi admin untuk registrasi
-                </Button>
-              </p>
-            </div>
           </CardContent>
         </Card>
       </div>
