@@ -175,7 +175,7 @@ function LoginForm() {
             <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center overflow-hidden">
               <Image
                 src="/logo.jpg"
-                alt="Logo ITERA Election"
+                alt="Logo PEMIRA KM-ITERA 2025"
                 width={48}
                 height={48}
                 className="object-contain"
@@ -287,7 +287,7 @@ export default function LoginPage() {
                 <Vote className="h-7 w-7 text-primary-foreground" />
               </div>
               <div className="text-left">
-                <h1 className="font-bold text-xl text-foreground">ITERA Election</h1>
+                <h1 className="font-bold text-xl text-foreground">PEMIRA KM-ITERA 2025</h1>
                 <p className="text-sm text-muted-foreground">Pemilihan Presiden Mahasiswa</p>
               </div>
             </div>

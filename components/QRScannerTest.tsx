@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
+import type { ChangeEvent } from "react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Camera, CameraOff, AlertCircle, CheckCircle } from "lucide-react"
+import { Camera, CameraOff, AlertCircle, CheckCircle, Upload } from "lucide-react"
 import dynamic from 'next/dynamic'
 
 // Dynamically import the scanner to avoid SSR issues
@@ -24,6 +25,8 @@ export default function QRScannerTest({ onScan, onError }: QRScannerProps) {
   const [success, setSuccess] = useState("")
   const [debugInfo, setDebugInfo] = useState<string[]>([])
   const lastScanTime = useRef<number>(0)
+  const [cameraSupported, setCameraSupported] = useState(true)
+  const [environmentMessage, setEnvironmentMessage] = useState("")
 
   const addDebugInfo = (message: string) => {
     const timestamp = new Date().toLocaleTimeString()
@@ -31,6 +34,28 @@ export default function QRScannerTest({ onScan, onError }: QRScannerProps) {
     console.log(logMessage)
     setDebugInfo(prev => [...prev.slice(-8), logMessage])
   }
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const hostname = window.location.hostname
+    const isLocal = hostname === 'localhost' || hostname === '127.0.0.1'
+    const secure = window.isSecureContext || isLocal
+    const mediaSupported = typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia
+
+    if (!secure) {
+      const message = "Browser memblokir akses kamera karena situs belum menggunakan HTTPS. Gunakan koneksi https atau gunakan unggah gambar."
+      setEnvironmentMessage(message)
+      setError(message)
+      addDebugInfo("Camera blocked: insecure context")
+    } else if (!mediaSupported) {
+      const message = "Peramban tidak mendukung akses kamera (getUserMedia)."
+      setEnvironmentMessage(message)
+      setError(message)
+      addDebugInfo("Camera unsupported on this device")
+    }
+
+    setCameraSupported(secure && mediaSupported)
+  }, [])
 
   const handleScan = (result: any) => {
     try {
@@ -95,6 +120,56 @@ export default function QRScannerTest({ onScan, onError }: QRScannerProps) {
     addDebugInfo(`Scanner error: ${errorMessage}`)
     setError(errorMessage)
     onError(errorMessage)
+  }
+
+  const processImageFile = (file: File) => {
+    return new Promise<ImageData>((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        canvas.width = img.width
+        canvas.height = img.height
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          reject(new Error('Canvas context tidak tersedia'))
+          return
+        }
+        ctx.drawImage(img, 0, 0)
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+        URL.revokeObjectURL(img.src)
+        resolve(imageData)
+      }
+      img.onerror = () => reject(new Error('Gagal membaca gambar'))
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
+  const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ""
+    if (!file) return
+
+    setError("")
+    setSuccess("")
+    addDebugInfo(`Processing uploaded file: ${file.name}`)
+
+    try {
+      const imageData = await processImageFile(file)
+      const jsQR = (await import('jsqr')).default
+      const code = jsQR(imageData.data, imageData.width, imageData.height)
+      if (code && code.data) {
+        addDebugInfo("QR detected from uploaded image")
+        setSuccess("QR code berhasil dibaca dari gambar")
+        onScan(code.data)
+      } else {
+        setError("Tidak menemukan QR code pada gambar")
+        addDebugInfo("Uploaded image did not contain QR data")
+      }
+    } catch (uploadErr) {
+      console.error(uploadErr)
+      addDebugInfo(`Upload scan error: ${uploadErr}`)
+      setError("Gagal memproses gambar QR")
+    }
   }
 
   const validateQRData = (data: string): boolean => {
@@ -186,7 +261,7 @@ export default function QRScannerTest({ onScan, onError }: QRScannerProps) {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {isScanning ? (
+            {cameraSupported && isScanning ? (
               <div className="space-y-4">
                 <div className="relative">
                   <BarcodeScannerComponent
@@ -217,7 +292,7 @@ export default function QRScannerTest({ onScan, onError }: QRScannerProps) {
                   Stop Scanner
                 </Button>
               </div>
-            ) : (
+            ) : cameraSupported ? (
               <div className="text-center space-y-4">
                 <div className="p-8 border-2 border-dashed border-gray-300 rounded-lg">
                   <Camera className="h-12 w-12 mx-auto mb-4 text-gray-400" />
@@ -230,12 +305,35 @@ export default function QRScannerTest({ onScan, onError }: QRScannerProps) {
                   Mulai Scan QR Code
                 </Button>
               </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="p-6 border border-dashed border-red-200 rounded-lg text-center bg-red-50">
+                  <p className="font-semibold text-red-800">Kamera tidak dapat digunakan</p>
+                  <p className="text-sm text-red-700 mt-2">
+                    {environmentMessage || "Browser memblokir akses kamera. Gunakan koneksi HTTPS atau unggah foto QR di bawah ini."}
+                  </p>
+                </div>
+              </div>
             )}
 
             {/* Test button */}
             <Button variant="secondary" onClick={testCallback} className="w-full">
               Test Callback
             </Button>
+
+            {/* Upload fallback */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Atau unggah foto QR code</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="block w-full text-sm text-muted-foreground border border-dashed border-muted rounded-lg p-2 cursor-pointer"
+              />
+              <p className="text-xs text-muted-foreground">
+                Fitur ini dapat digunakan ketika kamera diblokir atau perangkat tidak mendukung pemindaian langsung.
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>

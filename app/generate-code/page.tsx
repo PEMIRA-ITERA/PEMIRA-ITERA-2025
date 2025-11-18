@@ -308,7 +308,7 @@ export default function GenerateCodePage() {
               <QrCode className="h-7 w-7 text-primary-foreground" />
             </div>
             <div className="text-left">
-              <h1 className="font-bold text-xl text-foreground">ITERA Election</h1>
+              <h1 className="font-bold text-xl text-foreground">PEMIRA KM-ITERA 2025</h1>
               <p className="text-sm text-muted-foreground">Generate Kode Voting</p>
             </div>
           </div>

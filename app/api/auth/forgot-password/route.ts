@@ -56,12 +56,12 @@ export async function POST(request: NextRequest) {
     try {
       await sendEmail({
         to: email,
-        subject: 'Kode OTP Reset Password - ITERA Election',
+        subject: 'Kode OTP Reset Password - PEMIRA KM-ITERA 2025',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #1f2937;">Reset Password ITERA Election</h2>
+            <h2 style="color: #1f2937;">Reset Password PEMIRA KM-ITERA 2025</h2>
             <p>Halo ${user.name},</p>
-            <p>Anda telah meminta untuk mereset password akun voting ITERA Election Anda.</p>
+            <p>Anda telah meminta untuk mereset password akun voting PEMIRA KM-ITERA 2025 Anda.</p>
             <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
               <h3 style="color: #1f2937; margin: 0;">Kode OTP Anda:</h3>
               <h1 style="color: #059669; font-size: 36px; letter-spacing: 4px; margin: 10px 0;">${otp}</h1>
@@ -73,15 +73,15 @@ export async function POST(request: NextRequest) {
               <li>Kode akan kedaluwarsa dalam 10 menit</li>
               <li>Jika Anda tidak meminta reset password, abaikan email ini</li>
             </ul>
-            <p>Terima kasih,<br>Tim ITERA Election</p>
+            <p>Terima kasih,<br>Tim PEMIRA KM-ITERA 2025</p>
           </div>
         `,
         text: `
-Reset Password ITERA Election
+Reset Password PEMIRA KM-ITERA 2025
 
 Halo ${user.name},
 
-Anda telah meminta untuk mereset password akun voting ITERA Election Anda.
+Anda telah meminta untuk mereset password akun voting PEMIRA KM-ITERA 2025 Anda.
 
 Kode OTP Anda: ${otp}
 
@@ -93,7 +93,7 @@ PENTING:
 - Jika Anda tidak meminta reset password, abaikan email ini
 
 Terima kasih,
-Tim ITERA Election
+Tim PEMIRA KM-ITERA 2025
         `
       })
 
