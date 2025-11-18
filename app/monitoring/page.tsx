@@ -8,8 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { Shield, Users, Vote, TrendingUp, Clock, RefreshCw, AlertCircle, LogOut, Server, Activity } from "lucide-react"
+import { Shield, Users, Vote, TrendingUp, Clock, RefreshCw, AlertCircle, LogOut, Server, Activity, User } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts"
+import MonitoringUserManagement from "@/components/monitoring-user-management"
 
 interface DashboardStats {
   totalUsers: number
@@ -185,7 +186,15 @@ export default function MonitoringPage() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <Button variant="outline" onClick={() => { loadStats(); loadRecentValidations(); loadSystemStatus(); loadLogs() }}>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                loadStats();
+                loadRecentValidations();
+                loadSystemStatus();
+                loadLogs();
+              }}
+            >
               <RefreshCw className="mr-2 h-4 w-4" />
               Refresh
             </Button>
@@ -211,9 +220,9 @@ export default function MonitoringPage() {
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Ringkasan</TabsTrigger>
             <TabsTrigger value="validations">Validasi</TabsTrigger>
-            <TabsTrigger value="charts">Grafik</TabsTrigger>
             <TabsTrigger value="system">Status Sistem</TabsTrigger>
             <TabsTrigger value="logs">Aktivitas</TabsTrigger>
+            <TabsTrigger value="users">Pengguna</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -294,9 +303,6 @@ export default function MonitoringPage() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-
-          <TabsContent value="charts" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Perolehan Suara per Kandidat</CardTitle>
@@ -459,6 +465,10 @@ export default function MonitoringPage() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="users" className="space-y-6">
+            <MonitoringUserManagement />
           </TabsContent>
         </Tabs>
       </div>

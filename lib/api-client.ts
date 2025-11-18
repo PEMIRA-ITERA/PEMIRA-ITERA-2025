@@ -62,15 +62,47 @@ class ApiClient {
   }
 
   // User methods
+  static async getUsers(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    role?: string;
+    status?: string;
+    prodi?: string;
+  }) {
+    const query = new URLSearchParams();
+    
+    if (params) {
+      if (params.page) query.append('page', params.page.toString());
+      if (params.limit) query.append('limit', params.limit.toString());
+      if (params.search) query.append('search', params.search);
+      if (params.role) query.append('role', params.role);
+      if (params.status) query.append('status', params.status);
+      if (params.prodi) query.append('prodi', params.prodi);
+    }
+    
+    return this.request(`/admin/users?${query.toString()}`);
+  }
+
   static async getUserByEmail(email: string) {
-    return this.request(`/User?email=${encodeURIComponent(email)}`)
+    return this.request(`/admin/users/email/${encodeURIComponent(email)}`);
+  }
+
+  static async getUserById(userId: string) {
+    return this.request(`/admin/users/${userId}`);
   }
 
   static async updateUser(userId: string, data: any) {
-    return this.request(`/users/${userId}`, {
+    return this.request(`/admin/users/${userId}`, {
       method: 'PUT',
       body: JSON.stringify(data),
-    })
+    });
+  }
+
+  static async deleteUser(userId: string) {
+    return this.request(`/admin/users/${userId}`, {
+      method: 'DELETE',
+    });
   }
 
   // Candidate methods

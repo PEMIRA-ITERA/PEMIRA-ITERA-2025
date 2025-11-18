@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { requireAdmin } from '@/lib/session'
+import { requireAdminOrMonitoring } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
-    const authResult = await requireAdmin(request)
+    const authResult = await requireAdminOrMonitoring(request)
     if (authResult instanceof NextResponse) {
       return authResult
     }
@@ -47,25 +47,33 @@ export async function GET(request: NextRequest) {
       where.hasVoted = status === 'voted'
     }
 
-    // Get total count for pagination
-    const totalUsers = await prisma.user.count({ where })
-
-    // Get paginated users
-    const users = await prisma.user.findMany({
-      where,
-      orderBy: {
-        createdAt: 'desc'
-      },
-      skip: (page - 1) * limit,
-      take: limit
-    })
-
-    // Get unique prodi list for filter dropdown
-    const prodiList = await prisma.user.findMany({
-      select: { prodi: true },
-      distinct: ['prodi'],
-      orderBy: { prodi: 'asc' }
-    })
+    // Fetch data in parallel where possible
+    const [
+      totalUsers,
+      users,
+      prodiList,
+      totalVoters,
+      totalVoted,
+      totalAdmins
+    ] = await Promise.all([
+      prisma.user.count({ where }),
+      prisma.user.findMany({
+        where,
+        orderBy: {
+          createdAt: 'desc'
+        },
+        skip: (page - 1) * limit,
+        take: limit
+      }),
+      prisma.user.findMany({
+        select: { prodi: true },
+        distinct: ['prodi'],
+        orderBy: { prodi: 'asc' }
+      }),
+      prisma.user.count({ where: { role: 'VOTER' } }),
+      prisma.user.count({ where: { hasVoted: true } }),
+      prisma.user.count({ where: { role: { in: ['ADMIN', 'SUPER_ADMIN'] } } })
+    ])
 
     return NextResponse.json({ 
       users,
@@ -75,7 +83,13 @@ export async function GET(request: NextRequest) {
         total: totalUsers,
         totalPages: Math.ceil(totalUsers / limit)
       },
-      prodiList: prodiList.map(p => p.prodi)
+      prodiList: prodiList.map(p => p.prodi).filter(Boolean),
+      stats: {
+        totalUsers,
+        totalVoters,
+        totalVoted,
+        totalAdmins
+      }
     })
   } catch (error) {
     console.error('Get users error:', error)

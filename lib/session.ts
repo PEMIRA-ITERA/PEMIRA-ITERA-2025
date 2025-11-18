@@ -100,6 +100,27 @@ export async function requireAuth(request: NextRequest) {
   return user
 }
 
+export async function requireAdminOrMonitoring(request: NextRequest) {
+  const user = await getUserFromRequest(request)
+
+  if (!user) {
+    return NextResponse.json(
+      { error: 'Authentication required' },
+      { status: 401 }
+    )
+  }
+
+  const allowedRoles = ['ADMIN', 'SUPER_ADMIN', 'MONITORING']
+  if (!allowedRoles.includes(String(user.role))) {
+    return NextResponse.json(
+      { error: 'Admin or monitoring access required' },
+      { status: 403 }
+    )
+  }
+
+  return user
+}
+
 export async function requireMonitoringAccess(request: NextRequest) {
   const user = await getUserFromRequest(request)
 
