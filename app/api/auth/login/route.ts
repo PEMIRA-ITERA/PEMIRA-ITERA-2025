@@ -81,10 +81,15 @@ export async function POST(request: NextRequest) {
         { expiresIn: '7d' }
       )
 
+      // Determine if cookie must be marked secure (only over HTTPS).
+      const forwardedProto = request.headers.get('x-forwarded-proto') || ''
+      const envForcesSecure = process.env.COOKIE_SECURE === 'true'
+      const shouldUseSecureCookie = envForcesSecure || (process.env.NODE_ENV === 'production' && forwardedProto === 'https')
+
       // Set secure session cookie
       response.cookies.set('user-session', sessionToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: shouldUseSecureCookie,
         sameSite: 'strict',
         maxAge: 60 * 60 * 24 * 7, // 7 days
         path: '/'
