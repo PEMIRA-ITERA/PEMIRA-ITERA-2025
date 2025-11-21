@@ -304,8 +304,15 @@ export default function GenerateCodePage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center">
-              <QrCode className="h-7 w-7 text-primary-foreground" />
+            <div className="h-12 w-12 overflow-hidden rounded-lg">
+              <Image
+                src="/logo.jpg"
+                alt="Logo PEMIRA ITERA"
+                width={48}
+                height={48}
+                className="h-full w-full object-cover"
+                priority
+              />
             </div>
             <div className="text-left">
               <h1 className="font-bold text-xl text-foreground">PEMIRA KM-ITERA 2025</h1>
