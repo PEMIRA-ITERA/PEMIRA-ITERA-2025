@@ -266,18 +266,6 @@ export default function SuccessPage() {
             </CardContent>
           </Card>
 
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="outline" onClick={() => router.push("/")} className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Kembali ke Beranda
-            </Button>
-            <Button onClick={handleLogout} variant="secondary" className="flex items-center gap-2">
-              <LogOut className="h-4 w-4" />
-              Logout
-            </Button>
-          </div>
-
           {/* Footer */}
           <div className="text-center text-sm text-muted-foreground pt-8 border-t">
             <p>Pemilihan Presiden Mahasiswa ITERA 2025</p>
