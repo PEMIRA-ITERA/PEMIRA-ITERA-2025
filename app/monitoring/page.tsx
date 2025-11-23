@@ -7,9 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
 import { Shield, Users, Vote, TrendingUp, Clock, RefreshCw, AlertCircle, LogOut, Server, Activity, User } from "lucide-react"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts"
 import MonitoringUserManagement from "@/components/monitoring-user-management"
 
 interface DashboardStats {
@@ -18,19 +16,6 @@ interface DashboardStats {
   totalCandidates: number
   pendingValidations: number
   votingPercentage: number
-}
-
-interface VoteStatsItem {
-  candidateId: string
-  candidateName: string
-  voteCount: number
-  percentage: number
-}
-
-interface ProdiVoteStats {
-  prodi: string
-  totalVotes: number
-  candidates: { name: string; count: number }[]
 }
 
 interface SystemStatusPayload {
@@ -55,8 +40,6 @@ export default function MonitoringPage() {
     pendingValidations: 0,
     votingPercentage: 0,
   })
-  const [voteStats, setVoteStats] = useState<VoteStatsItem[]>([])
-  const [prodiVoteStats, setProdiVoteStats] = useState<ProdiVoteStats[]>([])
   const [recentValidations, setRecentValidations] = useState<any[]>([])
   const [systemStatus, setSystemStatus] = useState<SystemStatusPayload | null>(null)
   const [logs, setLogs] = useState<any[]>([])
@@ -117,8 +100,6 @@ export default function MonitoringPage() {
     try {
       const res = await ApiClient.getMonitoringStats()
       setStats(res.stats)
-      setVoteStats(res.voteStats || [])
-      setProdiVoteStats(res.prodiVoteStats || [])
     } catch (e) {
       console.warn("Failed loading stats", e)
     }
@@ -226,38 +207,6 @@ export default function MonitoringPage() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            {/* Prodi Vote Statistics */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Statistik Vote per Program Studi</CardTitle>
-                <CardDescription>Total suara yang sudah masuk dari setiap program studi dan kandidat yang dipilih</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {prodiVoteStats.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Belum ada data vote per prodi</p>
-                  ) : (
-                    prodiVoteStats.map((prodiStat) => (
-                      <div key={prodiStat.prodi} className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <h4 className="font-semibold text-sm">{prodiStat.prodi}</h4>
-                          <Badge variant="secondary">{nf.format(prodiStat.totalVotes)} suara</Badge>
-                        </div>
-                        <div className="space-y-2">
-                          {prodiStat.candidates.map((candidate) => (
-                            <div key={candidate.name} className="flex items-center justify-between text-sm">
-                              <span className="text-muted-foreground">{candidate.name}</span>
-                              <span className="font-medium">{nf.format(candidate.count)} suara</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -303,24 +252,6 @@ export default function MonitoringPage() {
                 </CardContent>
               </Card>
             </div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Perolehan Suara per Kandidat</CardTitle>
-                <CardDescription>Semakin tinggi batang, semakin banyak suara yang diterima kandidat</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={voteStats}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="candidateName" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar name="Jumlah Suara" dataKey="voteCount" fill="#6366f1" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           <TabsContent value="validations" className="space-y-6">
