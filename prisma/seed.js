@@ -38,9 +38,9 @@ async function main() {
 
   // Seed super admin user
   const superAdmin = await prisma.user.upsert({
-    where: { nim: "1" },
+    where: { nim: "0101" },
     update: {
-      name: "SUPER ADMIN",
+      name: "ADMIN SUPER",
       prodi: "S1 TEKNIK FISIKA",
       role: Role.SUPER_ADMIN,
     },
@@ -52,39 +52,7 @@ async function main() {
     },
   });
 
-  // Seed admin user
-  const adminUser = await prisma.user.upsert({
-    where: { nim: "2" },
-    update: {
-      name: "ADMIN",
-      prodi: "S1 TEKNIK FISIKA",
-      role: Role.ADMIN,
-    },
-    create: {
-      nim: "2",
-      name: "ADMIN",
-      prodi: "S1 TEKNIK FISIKA",
-      role: Role.ADMIN,
-    },
-  });
-
-  // Seed monitoring user
-  const monitoringUser = await prisma.user.upsert({
-    where: { nim: "3" },
-    update: {
-      name: "MONITORING",
-      prodi: "S1 TEKNIK FISIKA",
-      role: Role.MONITORING,
-    },
-    create: {
-      nim: "3",
-      name: "MONITORING",
-      prodi: "S1 TEKNIK FISIKA",
-      role: Role.MONITORING,
-    },
-  });
-
-  console.log("Seed completed:", { candidate1, candidate2, superAdmin, adminUser, monitoringUser });
+  console.log("Seed completed:", { candidate1, candidate2, superAdmin });
 }
 
 main()
