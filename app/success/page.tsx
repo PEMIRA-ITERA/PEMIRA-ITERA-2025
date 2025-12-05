@@ -197,34 +197,6 @@ export default function SuccessPage() {
                     </p>
                   </div>
                 </div>
-
-                {voteData && (
-                  <div className="border-t pt-4">
-                    <p className="text-sm text-muted-foreground mb-2">Kandidat yang Dipilih</p>
-                    <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
-                      <div className="relative w-16 h-16">
-                        {voteData.candidatePhoto ? (
-                          <Image
-                            src={voteData.candidatePhoto}
-                            alt={voteData.candidateName}
-                            fill
-                            className="rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
-                            <User className="h-8 w-8 text-gray-400" />
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">{voteData.candidateName}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          NIM: {voteData.candidateNim}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>
